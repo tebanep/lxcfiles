@@ -167,7 +167,7 @@ RUN mkdir -p /var/log/odoo
 RUN chown -R root:odoo /var/log/odoo
 RUN chmod -R 755 /var/log/odoo
 
-#USER odoo
+USER odoo
 
 # Change to odoo home directory
 WORKDIR /opt/odoo
