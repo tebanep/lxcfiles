@@ -161,6 +161,7 @@ RUN cp /usr/local/bin/wkhtmltoimage /usr/bin
 RUN rm wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 
 USER odoo
+
 RUN export MYVAR='hello world'
 RUN echo "the current home is"
 RUN echo $HOME
@@ -177,11 +178,6 @@ RUN git clone https://www.github.com/odoo/odoo --depth 1 --branch 8.0 --single-b
 # Entrypoint
 # Set container's entrypoint
 # --------------------------------------------------------------------------------
-
-USER postgres
-
-COPY crontab.txt /
-RUN crontab /crontab.txt
 
 USER root
 
