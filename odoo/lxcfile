@@ -7,7 +7,6 @@ MAINTAINER Esteban Echeverry <tebanep@gmail.com>
 # All volumes are mounted by containers
 # that use "volumes-from" when run.
 # --------------------------------------------------------------------------------
-ENV REFRESHED_AT 2015-01-18
 
 # add our users and groups first to make sure their IDs get assigned consistently,
 # regardless of whatever dependencies get added
@@ -38,7 +37,6 @@ RUN DEBIAN_FRONTEND=noninteractive locale-gen fr_FR \
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y locales \
 	&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
-ENV LANG en_US.utf8
 
 # Install basic OS package
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated -q bzr \
@@ -52,17 +50,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated -q
     wget \
     tmux \
     htop \
-    cron \
-    supervisor
-
-RUN mkdir -p /var/log/supervisor
-
+    cron
 
 # --------------------------------------------------------------------------------
 # PostgreSQL
 # Install the ERP's database
 # --------------------------------------------------------------------------------
-ENV POSTGRESQL_REFRESHED_AT 2015-01-18
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
@@ -88,32 +81,23 @@ EXPOSE 5432
 # Nginx
 # Install the Nginx web server
 # --------------------------------------------------------------------------------
-ENV ODOO_REFRESHED_AT 2015-01-18
 
 USER root
 
+# Copy external files
+RUN mkdir -p /etc/nginx/sites-enabled
+COPY odoo_nginx /etc/nginx/sites-enabled
+
 # Install Nginx.
-RUN \
-  add-apt-repository -y ppa:nginx/stable && \
-  apt-get update && \
-  apt-get install -y nginx && \
-  rm -rf /var/lib/apt/lists/* && \
-  echo "\ndaemon off;" >> /etc/nginx/nginx.conf && \
+RUN add-apt-repository -y ppa:nginx/stable && \
+  apt-get update && apt-get install -y nginx && \
   chown -R www-data:www-data /var/lib/nginx
-
-# Create Nginx's volumes
-VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx", "/var/www/html"]
-
-# Expose Nginx's ports.
-#EXPOSE 80
-#EXPOSE 443
 
 
 # --------------------------------------------------------------------------------
 # Odoo
 # Install the ERP
 # --------------------------------------------------------------------------------
-ENV ODOO_REFRESHED_AT 2015-01-18
 
 USER root
 
@@ -149,7 +133,7 @@ python-gdata python-gevent python-imaging python-jinja2 python-ldap python-libxs
 python-mako python-mock python-openid python-passlib python-psutil python-psycopg2 python-pybabel \
 python-pychart python-pydot python-pyparsing python-pypdf python-reportlab python-requests \
 python-simplejson python-tz python-unittest2 python-vatnumber python-vobject python-werkzeug \
-python-xlwt python-yaml wkhtmltopdf
+python-xlwt python-yaml
 
 # Copy Odoo configuration file to configuration directory
 RUN mkdir -p /etc/odoo
@@ -167,7 +151,18 @@ RUN mkdir -p /var/log/odoo
 RUN chown -R root:odoo /var/log/odoo
 RUN chmod -R 755 /var/log/odoo
 
+# Install wkhtmltopdf
+RUN wget http://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+RUN dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+RUN cp /usr/local/bin/wkhtmltopdf /usr/bin
+RUN cp /usr/local/bin/wkhtmltoimage /usr/bin
+RUN rm wkhtmltox-0.12.2.2.1_linux-trusty-amd64.deb
+
 USER odoo
+RUN export MYVAR='hello world'
+RUN echo "the current home is"
+RUN echo $HOME
+RUN echo $MYVAR
 
 # Change to odoo home directory
 WORKDIR /opt/odoo
@@ -176,43 +171,24 @@ WORKDIR /opt/odoo
 ENV ODOO_DOWNLOADED_AT 2015-01-06
 RUN git clone https://www.github.com/odoo/odoo --depth 1 --branch 8.0 --single-branch
 
-# Expose Odoo's ports
-#EXPOSE 8069
-#EXPOSE 8072
-
-# Create Odoo's volumes
-#VOLUME ["/etc/odoo", "/opt/odoo/addons", "/var/log/odoo"]
-
 # --------------------------------------------------------------------------------
 # Entrypoint
 # Set container's entrypoint
 # --------------------------------------------------------------------------------
-#ENV ENTRYPOINT_REFRESHED_AT 2015-01-18
 
-#USER postgres
+USER postgres
 
-#COPY crontab.txt /
-#RUN crontab /crontab.txt
+COPY crontab.txt /
+RUN crontab /crontab.txt
 
-#USER root
+USER root
 
 # Change to root directory
-#WORKDIR /
+WORKDIR /
 
+# Create Backups' directories
+RUN mkdir -p /backups
+RUN chmod 777 -R /backups
 
-# Copy external files
-#COPY odoo_nginx /etc/nginx/sites-enabled
-
-# Create Backups' volumes
-#RUN mkdir -p /backups
-#RUN chmod 777 -R /backups
-
-#RUN mkdir -p /backer
-#RUN chmod 777 -R /backer
-
-#VOLUME ["/backups", "/etc/cron.d", "/backer"]
-
-#COPY init.py /
-#RUN chmod +x init.py
-
-#COPY supervisord.conf.d/* /etc/supervisor/conf.d/
+RUN mkdir -p /backer
+RUN chmod 777 -R /backer
