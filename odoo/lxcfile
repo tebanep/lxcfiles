@@ -1,4 +1,4 @@
-FROM container:ubuntu_base:snapshot
+FROM ubuntu:14.04
 MAINTAINER Esteban Echeverry <tebanep@gmail.com>
 
 
