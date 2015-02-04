@@ -34,7 +34,7 @@ RUN DEBIAN_FRONTEND=noninteractive locale-gen fr_FR \
     && echo 'LANG="en_US.UTF-8"' > /etc/default/locale
 
 # make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y locales \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y locales \
 	&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 
@@ -60,9 +60,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated -q
 # Install the ERP's database
 # --------------------------------------------------------------------------------
 
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-RUN apt-get update && apt-get install -y python-software-properties software-properties-common postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3
+RUN apt-get install -y python-software-properties software-properties-common postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3
 
 USER postgres
 
@@ -92,8 +90,7 @@ RUN mkdir -p /etc/nginx/sites-enabled
 COPY odoo_nginx /etc/nginx/sites-enabled
 
 # Install Nginx.
-RUN add-apt-repository -y ppa:nginx/stable && \
-  apt-get update && apt-get install -y nginx && \
+RUN apt-get install -y nginx && \
   chown -R www-data:www-data /var/lib/nginx
 
 
@@ -103,9 +100,6 @@ RUN add-apt-repository -y ppa:nginx/stable && \
 # --------------------------------------------------------------------------------
 
 USER root
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y
 
 # Set utf-8 to python enconding
 ENV PYTHONIOENCODING utf-8
