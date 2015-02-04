@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu
 MAINTAINER Esteban Echeverry <tebanep@gmail.com>
 
 
@@ -47,6 +47,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated -q
     software-properties-common \
     git \
     vim \
+    nano \
     wget \
     tmux \
     htop \
@@ -154,19 +155,13 @@ RUN chown -R root:odoo /var/log/odoo
 RUN chmod -R 755 /var/log/odoo
 
 # Install wkhtmltopdf
-RUN wget http://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
-RUN dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
-RUN cp /usr/local/bin/wkhtmltopdf /usr/bin
-RUN cp /usr/local/bin/wkhtmltoimage /usr/bin
-RUN rm wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+#RUN wget http://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+#RUN dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+#RUN cp /usr/local/bin/wkhtmltopdf /usr/bin
+#RUN cp /usr/local/bin/wkhtmltoimage /usr/bin
+#RUN rm wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 
 USER odoo
-
-RUN export MYVAR='hello world'
-RUN echo "the current home is"
-RUN echo $HOME
-RUN echo $MYVAR
-
 # Change to odoo home directory
 WORKDIR /opt/odoo
 
