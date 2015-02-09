@@ -1,5 +1,5 @@
-FROM ubuntu
-MAINTAINER Esteban Echeverry <tebanep@gmail.com>
+FROM ubuntu:14.04
+MAINTAINER Esteban Echeverry <eecheverry@nubark.com>
 
 
 # --------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ python-xlwt python-yaml
 RUN mkdir -p /etc/odoo
 COPY odoo.conf /etc/odoo
 RUN chown -R odoo: /etc/odoo
-RUN chmod -R 777 /etc/odoo
+RUN chmod -R 755 /etc/odoo
 
 # Create Odoo addons directory
 RUN mkdir -p /opt/odoo/addons
@@ -145,15 +145,22 @@ RUN chmod -R 755 /opt/odoo
 
 # Create Odoo log directory
 RUN mkdir -p /var/log/odoo
-RUN chown -R root:odoo /var/log/odoo
+RUN chown -R odoo:root /var/log/odoo
 RUN chmod -R 755 /var/log/odoo
 
+# Install the boot script
+RUN mkdir -p /etc/init.d
+COPY odoo /etc/init.d
+RUN chmod 755 /etc/init.d/odoo
+RUN chown root: /etc/init.d/odoo
+RUN update-rc.d odoo defaults
+
 # Install wkhtmltopdf
-#RUN wget http://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
-#RUN dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
-#RUN cp /usr/local/bin/wkhtmltopdf /usr/bin
-#RUN cp /usr/local/bin/wkhtmltoimage /usr/bin
-#RUN rm wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+RUN wget http://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+RUN dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+RUN cp /usr/local/bin/wkhtmltopdf /usr/bin
+RUN cp /usr/local/bin/wkhtmltoimage /usr/bin
+RUN rm wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 
 USER odoo
 # Change to odoo home directory
@@ -162,20 +169,3 @@ WORKDIR /opt/odoo
 # Download odoo from github
 ENV ODOO_DOWNLOADED_AT 2015-01-06
 RUN git clone https://www.github.com/odoo/odoo --depth 1 --branch 8.0 --single-branch
-
-# --------------------------------------------------------------------------------
-# Entrypoint
-# Set container's entrypoint
-# --------------------------------------------------------------------------------
-
-USER root
-
-# Change to root directory
-WORKDIR /
-
-# Create Backups' directories
-RUN mkdir -p /backups
-RUN chmod 777 -R /backups
-
-RUN mkdir -p /backer
-RUN chmod 777 -R /backer

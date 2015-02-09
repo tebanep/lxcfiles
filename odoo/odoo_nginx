@@ -1,4 +1,22 @@
-server {
-    listen         80;
-    return 301 https://$host$request_uri;
+upstream odoo_server {
+    server 127.0.0.1:8069 weight=1 fail_timeout=300s;
 }
+
+upstream odoo_server_longpolling {
+    server 127.0.0.1:8072 weight=1 fail_timeout=300s;
+}
+
+server {
+    # server port and name
+    listen 80;
+
+    location / {
+        proxy_pass http://odoo_server/;
+    }
+
+    # longpolling request are taken care by the odoo longpolling server to enable chat
+    location /longpolling {
+        proxy_pass http://odoo_server_longpolling;
+    }
+}
+
