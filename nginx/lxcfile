@@ -18,7 +18,8 @@ RUN apt-get dist-upgrade -y
 
 # Copy external files
 RUN mkdir -p /etc/nginx/sites-enabled
-COPY lxc_container /etc/nginx/sites-enabled
+COPY lxc_container /etc/nginx/sites-available
+RUN ln -s /etc/nginx/sites-available/lxc_container /etc/nginx/sites-enabled
 
 # Install Nginx.
 RUN apt-get install -y nginx && \
