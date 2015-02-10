@@ -87,7 +87,8 @@ USER root
 
 # Copy external files
 RUN mkdir -p /etc/nginx/sites-enabled
-COPY odoo_nginx /etc/nginx/sites-enabled
+COPY odoo_nginx /etc/nginx/sites-available
+RUN ln -s /etc/nginx/sites-available/odoo_nginx /etc/nginx/sites-enabled
 
 # Install Nginx.
 RUN apt-get install -y nginx && \
