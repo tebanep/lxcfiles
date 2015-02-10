@@ -1,0 +1,22 @@
+upstream x_container {
+    server <x_container_ip>:80 weight=1 fail_timeout=300s;
+}
+
+server {
+    listen 80;
+    server_name <x_container_domain>;
+
+    location / {
+        # force timeouts if the backend dies
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503;
+
+        # set headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forward-For $proxy_add_x_forwarded_for;
+
+        proxy_pass http://x_container/;
+    }
+}
+
+

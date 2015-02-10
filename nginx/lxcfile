@@ -1,0 +1,26 @@
+FROM ubuntu:14.04
+MAINTAINER Esteban Echeverry <eecheverry@nubark.com>
+
+
+# --------------------------------------------------------------------------------
+# Data container for Nginx.
+# that use "volumes-from" when run.
+# --------------------------------------------------------------------------------
+
+# Update and upgrade
+RUN apt-get update
+RUN apt-get dist-upgrade -y
+
+# --------------------------------------------------------------------------------
+# Nginx
+# Install the Nginx web server
+# --------------------------------------------------------------------------------
+
+# Copy external files
+RUN mkdir -p /etc/nginx/sites-enabled
+COPY lxc_container /etc/nginx/sites-enabled
+
+# Install Nginx.
+RUN apt-get install -y nginx && \
+  chown -R www-data:www-data /var/lib/nginx
+
