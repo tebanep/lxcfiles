@@ -3,9 +3,7 @@ MAINTAINER Esteban Echeverry <eecheverry@nubark.com>
 
 
 # --------------------------------------------------------------------------------
-# Data container for Odoo and PostgreSQL.
-# All volumes are mounted by containers
-# that use "volumes-from" when run.
+# Data container for Odoo, Nginx and PostgreSQL.
 # --------------------------------------------------------------------------------
 
 # add our users and groups first to make sure their IDs get assigned consistently,
@@ -16,9 +14,6 @@ RUN adduser --system --shell /bin/bash --home=/var/lib/postgresql -c "PostgreSQL
 
 # Create odoo user
 RUN adduser --system --shell /bin/bash --home=/opt/odoo -c "Odoo administrator" --group odoo
-
-# Create www-data user
-#RUN adduser --system --shell /usr/sbin/nologin --home=/var/www -c "Nginx administrator" --group www-data
 
 # Update and upgrade
 RUN apt-get update
@@ -36,7 +31,6 @@ RUN locale-gen fr_FR \
 # make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
 RUN apt-get install -y locales \
 	&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-
 
 # Install basic OS package
 RUN apt-get install -y --allow-unauthenticated -q bzr \
@@ -71,13 +65,6 @@ RUN /etc/init.d/postgresql start &&\
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.3/main/pg_hba.conf
 RUN echo "listen_addresses='*'" >> /etc/postgresql/9.3/main/postgresql.conf
 
-# Expose PostgreSQL's volumes
-EXPOSE 5432
-
-# Create PostgreSQL's volumes
-#VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
-
-
 # --------------------------------------------------------------------------------
 # Nginx
 # Install the Nginx web server
@@ -93,7 +80,6 @@ RUN ln -s /etc/nginx/sites-available/odoo_nginx /etc/nginx/sites-enabled
 # Install Nginx.
 RUN apt-get install -y nginx && \
   chown -R www-data:www-data /var/lib/nginx
-
 
 # --------------------------------------------------------------------------------
 # Odoo
