@@ -68,9 +68,7 @@ RUN wget -q -O- http://apt.nuxeo.org/nuxeo.key | sudo apt-key add -
 RUN add-apt-repository "deb http://apt.nuxeo.org/ trusty fasttracks"
 
 RUN apt-get update
-
-# Attach to the container and install nuxeo following its instructions with:
-# apt-get install -y nuxeo
+RUN apt-get install -y nuxeo
 
 
 
