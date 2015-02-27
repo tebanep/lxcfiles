@@ -65,10 +65,12 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/9.3/main/postgresql.conf
 # --------------------------------------------------------------------------------
 
 RUN wget -q -O- http://apt.nuxeo.org/nuxeo.key | sudo apt-key add -
-RUN add-apt-repository "deb http://apt.nuxeo.org/ trusty releases"
+RUN add-apt-repository "deb http://apt.nuxeo.org/ trusty fasttracks"
 
 RUN apt-get update
-RUN apt-get install -y nuxeo
+
+# Attach to the container and install nuxeo following its instructions with:
+# apt-get install -y nuxeo
 
 
 
