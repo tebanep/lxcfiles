@@ -1,0 +1,67 @@
+FROM ubuntu:14.04
+MAINTAINER Esteban Echeverry <eecheverry@nubark.com>
+
+
+# --------------------------------------------------------------------------------
+# Data container for Gitlab CI.
+# --------------------------------------------------------------------------------
+
+# Update and upgrade
+RUN apt-get update
+RUN apt-get dist-upgrade -y
+
+# Set locales
+RUN locale-gen fr_FR \
+    && locale-gen en_US.UTF-8 \
+    && locale-gen es_CO.UTF-8 \
+    && dpkg-reconfigure locales \
+    && update-locale LANG=en_US.UTF-8 \
+    && update-locale LC_ALL=en_US.UTF-8 \
+    && echo 'LANG="en_US.UTF-8"' > /etc/default/locale
+
+# make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
+RUN apt-get install -y locales \
+	&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+# Install basic OS package
+RUN apt-get install -y --allow-unauthenticated -q bzr \
+    python \
+    python-dev \
+    python-setuptools \
+    python-software-properties \
+    software-properties-common \
+    git \
+    vim \
+    nano \
+    wget \
+    tmux \
+    htop \
+    cron \
+    xfonts-base \
+    xfonts-75dpi
+
+# Set utf-8 to python enconding
+ENV PYTHONIOENCODING utf-8
+
+# Install pip
+RUN apt-get install -y python-pip
+
+# --------------------------------------------------------------------------------
+# Gitlab CI
+# Install the ECM
+# --------------------------------------------------------------------------------
+
+#RUN apt-get -y install openssh-server
+#RUN apt-get -y install postfix
+
+#RUN wget https://downloads-packages.s3.amazonaws.com/ubuntu-14.04/gitlab_7.8.4-omnibus.1-1_amd64.deb
+#RUN dpkg -i gitlab_7.8.4-omnibus.1-1_amd64.deb
+
+#RUN gitlab-ctl reconfigure
+
+
+
+
+
+
+
