@@ -1,0 +1,101 @@
+FROM ubuntu:14.04
+MAINTAINER Esteban Echeverry <eecheverry@nubark.com>
+
+
+# --------------------------------------------------------------------------------
+# Data container for OwnCloud.
+# --------------------------------------------------------------------------------
+
+# add our users and groups first to make sure their IDs get assigned consistently,
+# regardless of whatever dependencies get added
+
+# Update and upgrade
+RUN apt-get update
+RUN apt-get dist-upgrade -y
+
+# Set locales
+RUN locale-gen fr_FR \
+    && locale-gen en_US.UTF-8 \
+    && locale-gen es_CO.UTF-8 \
+    && dpkg-reconfigure locales \
+    && update-locale LANG=en_US.UTF-8 \
+    && update-locale LC_ALL=en_US.UTF-8 \
+    && echo 'LANG="en_US.UTF-8"' > /etc/default/locale
+
+# make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
+RUN apt-get install -y locales \
+	&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+# Install basic OS package
+RUN apt-get install -y --allow-unauthenticated -q bzr \
+    python \
+    python-dev \
+    python-setuptools \
+    python-pip \
+    python-software-properties \
+    software-properties-common \
+    git \
+    vim \
+    nano \
+    wget \
+    tmux \
+    htop \
+    cron \
+    xfonts-base \
+    xfonts-75dpi \
+
+# --------------------------------------------------------------------------------
+# PostgreSQL
+# Install the OwnCloud's database
+# --------------------------------------------------------------------------------
+
+RUN apt-get install -y postgresql-9.3 postgresql-client-9.3 postgresql-contrib-9.3
+
+USER postgres
+
+RUN /etc/init.d/postgresql start &&\
+    psql --command "CREATE USER owncloud WITH SUPERUSER PASSWORD 'owncloud';" &&\
+    createdb -O owncloud owncloud
+
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.3/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/9.3/main/postgresql.conf
+
+# --------------------------------------------------------------------------------
+# PHP
+# Install PHP
+# --------------------------------------------------------------------------------
+
+USER root
+
+RUN apt-get install -y php5-common php5-cli php5-fpm php5-pgsql
+RUN apt-get install -y php5-gd php5-json php5-curl php5-intl php5-mcrypt php5-imagic
+
+# --------------------------------------------------------------------------------
+# OwnCloud
+# Install OwnCloud
+# --------------------------------------------------------------------------------
+
+RUN wget https://download.owncloud.org/community/owncloud-8.0.2.tar.bz2
+RUN tar jxvf owncloud-8.0.2.tar.bz2
+RUN rm owncloud-8.0.2.tar.bz2
+
+RUN mkdir -p /var/www
+RUN mv owncloud /var/www/owncloud
+RUN chown -R root:root /var/www/owncloud
+RUN chmod 777 -R /var/www/owncloud
+
+
+# --------------------------------------------------------------------------------
+# Nginx
+# Install the Nginx web server
+# --------------------------------------------------------------------------------
+
+# Copy external files
+RUN mkdir -p /etc/nginx/sites-available
+RUN mkdir -p /etc/nginx/sites-enabled
+COPY cloud /etc/nginx/sites-available
+RUN ln -s /etc/nginx/sites-available/cloud /etc/nginx/sites-enabled
+
+# Install Nginx
+RUN apt-get install -y nginx && chown -R www-data:www-data /var/lib/nginx
+RUN rm /etc/nginx/sites-enabled/default
